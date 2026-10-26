@@ -28,7 +28,7 @@ function Loader({ done }: { done: boolean }) {
   useEffect(() => { const i = setInterval(() => setN((v) => Math.min(100, v + 3)), 45); return () => clearInterval(i); }, []);
   return (
     <div className={`fixed inset-0 z-[60] flex items-end justify-between bg-foreground p-8 text-background transition-[clip-path] duration-1000 ease-[cubic-bezier(.7,0,.3,1)] ${done ? "[clip-path:inset(0_0_100%_0)]" : "[clip-path:inset(0_0_0_0)]"}`}>
-      <span className="text-xs uppercase tracking-[0.3em]">Sketching ideas…</span>
+      <span className="text-xs uppercase tracking-[0.3em]">Loading</span>
       <span className="font-display text-[22vw] italic leading-none">{String(n).padStart(3, "0")}</span>
     </div>
   );
@@ -87,13 +87,13 @@ function WaterText() {
       onMouseLeave={() => (target.current = 0)}
     >
       <svg width="0" height="0" className="absolute">
-        <filter id="water">
+        <filter id="water" x="-10%" y="-30%" width="120%" height="160%">
           <feTurbulence ref={turb} type="fractalNoise" baseFrequency="0.012 0.04" numOctaves="2" seed="3" />
           <feDisplacementMap ref={disp} in="SourceGraphic" scale="0" />
         </filter>
       </svg>
-      <h1 className="font-display italic leading-[0.75] text-foreground" style={{ filter: "url(#water)" }}>
-        <Rise delay={0.6} className="pb-[3vw] pr-[2vw] text-[30vw]">ideas<span className="text-ember">.</span></Rise>
+      <h1 className="text-center font-display font-black uppercase leading-[0.85] text-foreground" style={{ filter: "url(#water)" }}>
+        <Rise delay={0.6} className="pt-[0.1em] text-[27vw] tracking-[-0.02em]">Creative</Rise>
       </h1>
     </div>
   );
@@ -109,28 +109,28 @@ function Index() {
       <Cursor />
       {done && (
         <>
-          <nav className="flex items-start justify-between py-6 text-[11px] uppercase tracking-[0.2em]">
-            <a href="#" className="p-2"><Rise delay={0.3}>[ J — 26 ]</Rise></a>
-            <ul className="flex gap-6 md:gap-10">
+          <nav className="grid grid-cols-3 items-center py-6 text-[11px] font-medium uppercase tracking-[0.25em]">
+            <a href="#" className="justify-self-start p-2 font-display text-xl font-black tracking-tight"><Rise delay={0.3}>J/26</Rise></a>
+            <ul className="flex justify-center gap-6 md:gap-12">
               {links.map((l, i) => (
-                <li key={l}><a href={`#${l.toLowerCase()}`} className="group block p-2"><Rise delay={0.4 + i * 0.08}><span className="text-ember">0{i + 1}</span> <span className="transition-opacity group-hover:opacity-50">{l}</span></Rise></a></li>
+                <li key={l}><a href={`#${l.toLowerCase()}`} className="block p-2 transition-opacity hover:opacity-50"><Rise delay={0.4 + i * 0.07}>{l}</Rise></a></li>
               ))}
             </ul>
-            <span className="hidden p-2 md:block"><Rise delay={0.7}>Local time · IST</Rise></span>
+            <span className="justify-self-end p-2 text-muted-foreground"><Rise delay={0.7}>Portfolio ’26</Rise></span>
           </nav>
-          <section className="grid flex-1 grid-cols-12 items-end gap-4 pb-8">
-            <div className="col-span-12 md:col-span-3 md:pb-[6vw]">
-              <p className="font-display text-4xl md:text-6xl"><Rise delay={0.5}>Built from</Rise></p>
-              <p className="mt-6 max-w-[26ch] text-xs leading-relaxed text-muted-foreground"><Rise delay={0.8}>Independent developer turning rough sketches into calm, living interfaces.</Rise></p>
+          <section className="flex flex-1 flex-col items-center justify-center">
+            <WaterText />
+            <div className="mt-2 flex w-full items-center gap-6">
+              <span className="h-px flex-1 bg-foreground/30" />
+              <h2 className="font-display text-5xl font-black uppercase md:text-7xl"><Rise delay={0.9}>Developer</Rise></h2>
+              <span className="h-px flex-1 bg-foreground/30" />
             </div>
-            <div className="col-span-12 md:col-span-9 md:text-right">
-              <WaterText />
-            </div>
+            <p className="mt-5 text-xs uppercase tracking-[0.4em]"><Rise delay={1.05}>Built from ideas.</Rise></p>
           </section>
-          <footer className="-mx-6 border-t border-foreground/20 py-4 md:-mx-10">
-            <div className="flex w-max marquee gap-12 whitespace-nowrap text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
-              {Array.from({ length: 2 }).flatMap((_, k) => ["Interfaces", "✺", "Motion", "✺", "Systems", "✺", "Experiments", "✺", "Available 2026", "✺"].map((w, i) => <span key={`${k}-${i}`}>{w}</span>))}
-            </div>
+          <footer className="flex items-end justify-between py-6 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+            <Rise delay={1.2}>©2026</Rise>
+            <a href="#work" className="p-2"><Rise delay={1.3}>Scroll ↓</Rise></a>
+            <Rise delay={1.4}>Open to work</Rise>
           </footer>
         </>
       )}
