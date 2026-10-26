@@ -92,8 +92,8 @@ function WaterText() {
           <feDisplacementMap ref={disp} in="SourceGraphic" scale="0" />
         </filter>
       </svg>
-      <h1 className="text-center font-display font-black uppercase leading-[0.78] text-foreground" style={{ filter: "url(#water)" }}>
-        <Rise delay={0.6} className="pt-[0.08em] text-[27vw] tracking-[-0.02em]">Creative</Rise>
+      <h1 className="text-center font-display font-black uppercase leading-[0.85] text-foreground" style={{ filter: "url(#water)" }}>
+        <Rise delay={0.6} className="pt-[0.1em] text-[27vw] tracking-[-0.02em]">Creative</Rise>
       </h1>
     </div>
   );
