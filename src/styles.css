@@ -159,6 +159,7 @@ a,button{cursor:none}
 @theme inline{--font-script:"Great Vibes",cursive}
 @keyframes hello-draw{0%{stroke-dashoffset:1200;fill-opacity:0}70%{stroke-dashoffset:0;fill-opacity:0}100%{stroke-dashoffset:0;fill-opacity:1}}
 @utility hello-draw{stroke-dasharray:1200;animation:hello-draw 2.4s cubic-bezier(.6,0,.3,1) both}
+@utility num-outline{color:transparent;-webkit-text-stroke:1.5px var(--background)}
 
 .developer-letter { display: inline-block; padding-block: 10px; margin-block: -10px; }
 .developer-letter > span { display: inline-block; pointer-events: none; transform-origin: center 70%; transition: transform 380ms cubic-bezier(.3,1.4,.5,1); }

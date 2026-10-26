@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
 const COUNT = 64;
-const CENTER = 40;
 
 /** Pinned string with smooth Verlet physics — plucked by the cursor, springs back. */
 function PhysicsString() {
@@ -12,8 +11,9 @@ function PhysicsString() {
     const element = svg.current;
     if (!element) return;
     let width = element.clientWidth;
-    const y = new Float32Array(COUNT + 1).fill(CENTER);
-    const prev = new Float32Array(COUNT + 1).fill(CENTER);
+    let center = element.clientHeight / 2;
+    const y = new Float32Array(COUNT + 1).fill(center);
+    const prev = new Float32Array(COUNT + 1).fill(center);
     const impulse = new Float32Array(COUNT + 1);
     let last: { x: number; y: number } | null = null;
     let frame = 0;
@@ -25,8 +25,8 @@ function PhysicsString() {
       const lastPt = last;
       last = { x, y: py };
       if (!lastPt || x < 0 || x > width) return;
-      const crossed = (lastPt.y - CENTER) * (py - CENTER) <= 0 && Math.abs(py - CENTER) < 60;
-      const near = Math.abs(py - CENTER) < 14;
+      const crossed = (lastPt.y - center) * (py - center) <= 0 && Math.abs(py - center) < 70;
+      const near = Math.abs(py - center) < 16;
       if (!crossed && !near) return;
       const vy = Math.max(-18, Math.min(18, py - lastPt.y));
       const c = (x / width) * COUNT;
@@ -39,12 +39,17 @@ function PhysicsString() {
 
     const loop = () => {
       width = element.clientWidth;
+      center = element.clientHeight / 2;
+      const top = 3, bottom = element.clientHeight - 3;
       for (let i = 1; i < COUNT; i++) {
         const imp = Math.max(-10, Math.min(10, impulse[i]!));
         impulse[i] = 0;
         const v = (y[i]! - prev[i]!) * 0.975 + imp;
         prev[i] = y[i]!;
-        y[i] = y[i]! + v + (CENTER - y[i]!) * 0.004;
+        y[i] = y[i]! + v + (center - y[i]!) * 0.004;
+        // Keep the string inside its box: squash instead of clipping out of view
+        if (y[i]! < top) { y[i] = top; prev[i] = Math.max(prev[i]!, top); }
+        else if (y[i]! > bottom) { y[i] = bottom; prev[i] = Math.min(prev[i]!, bottom); }
       }
       for (let it = 0; it < 6; it++) {
         for (let i = 1; i < COUNT; i++) {
@@ -54,13 +59,13 @@ function PhysicsString() {
       }
       // Smooth curve through midpoints
       const step = width / COUNT;
-      let d = `M0,${CENTER}`;
+      let d = `M0,${center}`;
       for (let i = 1; i < COUNT; i++) {
         const mx = (i + 0.5) * step;
         const my = (y[i]! + y[i + 1]!) / 2;
         d += ` Q${(i * step).toFixed(1)},${y[i]!.toFixed(2)} ${mx.toFixed(1)},${my.toFixed(2)}`;
       }
-      d += ` L${width.toFixed(1)},${CENTER}`;
+      d += ` L${width.toFixed(1)},${center}`;
       path.current?.setAttribute("d", d);
       frame = requestAnimationFrame(loop);
     };
@@ -74,7 +79,7 @@ function PhysicsString() {
   }, []);
 
   return (
-    <svg ref={svg} className="h-20 min-w-0 flex-1 overflow-hidden text-foreground/50" aria-hidden="true" data-physics-string="">
+    <svg ref={svg} className="h-28 min-w-0 flex-1 overflow-hidden text-foreground/50" aria-hidden="true" data-physics-string="">
       <path ref={path} d="" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );

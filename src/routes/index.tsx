@@ -31,9 +31,12 @@ function Loader({ done }: { done: boolean }) {
   return (
     <div className={`fixed inset-0 z-[60] bg-foreground p-8 text-background transition-[clip-path] duration-1000 ease-[cubic-bezier(.7,0,.3,1)] ${done ? "[clip-path:inset(0_0_100%_0)]" : "[clip-path:inset(0_0_0_0)]"}`}>
       {!hello ? (
-        <div className="flex h-full items-end justify-between">
-          <span className="text-xs uppercase tracking-[0.3em]">Loading</span>
-          <span className="font-display text-[22vw] italic leading-none">{String(n).padStart(3, "0")}</span>
+        <div className="flex h-full flex-col items-center justify-center gap-3">
+          <span className="text-[10px] uppercase tracking-[0.5em] opacity-70">Loading</span>
+          <span className="num-outline font-display text-[19vw] leading-none tabular-nums">{String(n).padStart(3, "0")}</span>
+          <div className="mt-3 h-px w-[45vw] max-w-md bg-background/25">
+            <div className="h-full bg-background transition-[width] duration-150 ease-out" style={{ width: `${n}%` }} />
+          </div>
         </div>
       ) : (
         <div className="flex h-full items-center justify-center">
