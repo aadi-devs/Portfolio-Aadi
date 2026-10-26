@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { DeveloperTitle } from "@/components/DeveloperTitle";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -15,21 +16,32 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-function Rise({ children, delay = 0, className = "" }: { children: ReactNode; delay?: number; className?: string }) {
+function Rise({ children, delay = 0, className = "", wide = false }: { children: ReactNode; delay?: number; className?: string; wide?: boolean }) {
   return (
-    <span className={`inline-block overflow-hidden align-bottom ${className}`}>
-      <span className="rise inline-block" style={{ animationDelay: `${delay}s` }}>{children}</span>
+    <span className={`inline-block overflow-hidden align-bottom ${wide ? "w-[130%] -ml-[15%]" : ""} ${className}`}>
+      <span className={`rise inline-block ${wide ? "w-full" : ""}`} style={{ animationDelay: `${delay}s` }}>{children}</span>
     </span>
   );
 }
 
 function Loader({ done }: { done: boolean }) {
   const [n, setN] = useState(0);
-  useEffect(() => { const i = setInterval(() => setN((v) => Math.min(100, v + 3)), 45); return () => clearInterval(i); }, []);
+  useEffect(() => { const i = setInterval(() => setN((v) => Math.min(100, v + 6)), 45); return () => clearInterval(i); }, []);
+  const hello = n >= 100;
   return (
-    <div className={`fixed inset-0 z-[60] flex items-end justify-between bg-foreground p-8 text-background transition-[clip-path] duration-1000 ease-[cubic-bezier(.7,0,.3,1)] ${done ? "[clip-path:inset(0_0_100%_0)]" : "[clip-path:inset(0_0_0_0)]"}`}>
-      <span className="text-xs uppercase tracking-[0.3em]">Loading</span>
-      <span className="font-display text-[22vw] italic leading-none">{String(n).padStart(3, "0")}</span>
+    <div className={`fixed inset-0 z-[60] bg-foreground p-8 text-background transition-[clip-path] duration-1000 ease-[cubic-bezier(.7,0,.3,1)] ${done ? "[clip-path:inset(0_0_100%_0)]" : "[clip-path:inset(0_0_0_0)]"}`}>
+      {!hello ? (
+        <div className="flex h-full items-end justify-between">
+          <span className="text-xs uppercase tracking-[0.3em]">Loading</span>
+          <span className="font-display text-[22vw] italic leading-none">{String(n).padStart(3, "0")}</span>
+        </div>
+      ) : (
+        <div className="flex h-full items-center justify-center">
+          <svg viewBox="0 0 800 260" className="w-[80vw] max-w-4xl" aria-label="welcome">
+            <text x="50%" y="62%" textAnchor="middle" className="hello-draw fill-current font-script" fontSize="200" stroke="currentColor" strokeWidth="1.5">welcome</text>
+          </svg>
+        </div>
+      )}
     </div>
   );
 }
@@ -56,15 +68,15 @@ function Cursor() {
   }, []);
   return (
     <>
-      <div ref={dot} className="pointer-events-none fixed left-0 top-0 z-[70] -ml-1 -mt-1 h-2 w-2 rounded-full bg-foreground" />
-      <div ref={ring} className="pointer-events-none fixed left-0 top-0 z-[70]">
-        <div className={`-ml-6 -mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-ember text-[10px] uppercase tracking-widest text-background transition-all duration-300 ${active ? "scale-100 opacity-100" : "scale-0 opacity-0"}`}>go</div>
+      <div ref={dot} className={`pointer-events-none fixed left-0 top-0 z-[70] -ml-1 -mt-1 h-2 w-2 rounded-full bg-foreground transition-opacity ${active ? "opacity-0" : "opacity-100"}`} />
+      <div ref={ring} className="pointer-events-none fixed left-0 top-0 z-[70] mix-blend-difference">
+        <div className={`-ml-7 -mt-7 h-14 w-14 rounded-full bg-[#fff] transition-transform duration-300 ${active ? "scale-100" : "scale-0"}`} />
       </div>
     </>
   );
 }
 
-const WORDS = ["Victus", "Aadi"];
+const WORDS = ["Aadi", "Victus"];
 
 function WaterText() {
   const [idx, setIdx] = useState(0);
@@ -97,7 +109,7 @@ function WaterText() {
         </filter>
       </svg>
       <h1 className="text-center font-display font-black uppercase leading-[0.85] text-foreground" style={{ filter: "url(#water)" }}>
-        <Rise delay={0.6} className="pt-[0.1em] text-[27vw] tracking-[-0.02em]">
+        <Rise delay={0.6} wide className="pt-[0.1em] text-[27vw] tracking-[-0.02em]">
           <span className="grid">
             {WORDS.map((w, i) => (
               <span key={w} aria-hidden={i !== idx} className={`col-start-1 row-start-1 transition-all duration-[1400ms] ease-[cubic-bezier(.7,0,.2,1)] ${i === idx ? "opacity-100 blur-0 [transform:scaleY(1)] tracking-[-0.02em]" : "opacity-0 blur-2xl [transform:scaleY(0.4)] tracking-[0.2em]"}`}>{w}</span>
@@ -111,7 +123,7 @@ function WaterText() {
 
 function Index() {
   const [done, setDone] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setDone(true), 1800); return () => clearTimeout(t); }, []);
+  useEffect(() => { const t = setTimeout(() => setDone(true), 4200); return () => clearTimeout(t); }, []);
   const links = ["Work", "About", "Projects", "Contact"];
   return (
     <main className="relative flex min-h-screen flex-col overflow-hidden px-6 md:px-10">
@@ -120,7 +132,7 @@ function Index() {
       {done && (
         <>
           <nav className="grid grid-cols-3 items-center py-6 text-[11px] font-medium uppercase tracking-[0.25em]">
-            <a href="#" className="justify-self-start p-2 font-display text-xl font-black tracking-tight"><Rise delay={0.3}>J/26</Rise></a>
+            <a href="#" aria-label="Victus" className="justify-self-start px-2 text-4xl leading-none" style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 700, letterSpacing: "0.02em" }}><Rise delay={0.3}>Victus</Rise></a>
             <ul className="flex justify-center gap-6 md:gap-12">
               {links.map((l, i) => (
                 <li key={l}><a href={`#${l.toLowerCase()}`} className="block p-2 transition-opacity hover:opacity-50"><Rise delay={0.4 + i * 0.07}>{l}</Rise></a></li>
@@ -130,11 +142,7 @@ function Index() {
           </nav>
           <section className="flex flex-1 flex-col items-center justify-center">
             <WaterText />
-            <div className="mt-2 flex w-full items-center gap-6">
-              <span className="h-px flex-1 bg-foreground/30" />
-              <h2 className="font-display text-5xl font-black uppercase md:text-7xl"><Rise delay={0.9}>Developer</Rise></h2>
-              <span className="h-px flex-1 bg-foreground/30" />
-            </div>
+            <DeveloperTitle />
             <p className="mt-5 text-xs uppercase tracking-[0.4em]"><Rise delay={1.05}>Built from ideas.</Rise></p>
           </section>
           <footer className="flex items-end justify-between py-6 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">

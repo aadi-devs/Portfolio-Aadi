@@ -156,3 +156,18 @@ a,button{cursor:none}
 @utility loadbar{animation:loadbar 1.4s cubic-bezier(.7,0,.3,1) both;transform-origin:left}
 @keyframes marquee{to{transform:translateX(-50%)}}
 @utility marquee{animation:marquee 30s linear infinite}
+@theme inline{--font-script:"Great Vibes",cursive}
+@keyframes hello-draw{0%{stroke-dashoffset:1200;fill-opacity:0}70%{stroke-dashoffset:0;fill-opacity:0}100%{stroke-dashoffset:0;fill-opacity:1}}
+@utility hello-draw{stroke-dasharray:1200;animation:hello-draw 2.4s cubic-bezier(.6,0,.3,1) both}
+
+.developer-letter { display: inline-block; padding-block: 10px; margin-block: -10px; }
+.developer-letter > span { display: inline-block; pointer-events: none; transform-origin: center 70%; transition: transform 650ms cubic-bezier(.22,1.65,.38,1); }
+.developer-letter-up { --letter-lift: -12px; --letter-tilt: -8deg; --neighbor-lift: 4px; --neighbor-tilt: 3deg; }
+.developer-letter-down { --letter-lift: 12px; --letter-tilt: 8deg; --neighbor-lift: -4px; --neighbor-tilt: -3deg; }
+.developer-letter.is-active > span { transform: translateY(var(--letter-lift)) rotate(var(--letter-tilt)); }
+.developer-letter.is-neighbor > span { transform: translateY(var(--neighbor-lift)) rotate(var(--neighbor-tilt)); }
+@media (prefers-reduced-motion: reduce) {
+  .developer-title .rise { animation: none; }
+  .developer-letter > span { transition: none; }
+  .developer-letter.is-active > span, .developer-letter.is-neighbor > span { transform: none; }
+}
