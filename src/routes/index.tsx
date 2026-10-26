@@ -64,7 +64,11 @@ function Cursor() {
   );
 }
 
+const WORDS = ["Victus", "Aadi"];
+
 function WaterText() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => { const t = setInterval(() => setIdx((i) => (i + 1) % WORDS.length), 10000); return () => clearInterval(t); }, []);
   const turb = useRef<SVGFETurbulenceElement>(null);
   const disp = useRef<SVGFEDisplacementMapElement>(null);
   const target = useRef(0);
@@ -93,7 +97,13 @@ function WaterText() {
         </filter>
       </svg>
       <h1 className="text-center font-display font-black uppercase leading-[0.85] text-foreground" style={{ filter: "url(#water)" }}>
-        <Rise delay={0.6} className="pt-[0.1em] text-[27vw] tracking-[-0.02em]">Creative</Rise>
+        <Rise delay={0.6} className="pt-[0.1em] text-[27vw] tracking-[-0.02em]">
+          <span className="grid">
+            {WORDS.map((w, i) => (
+              <span key={w} aria-hidden={i !== idx} className={`col-start-1 row-start-1 transition-all duration-[1400ms] ease-[cubic-bezier(.7,0,.2,1)] ${i === idx ? "opacity-100 blur-0 [transform:scaleY(1)] tracking-[-0.02em]" : "opacity-0 blur-2xl [transform:scaleY(0.4)] tracking-[0.2em]"}`}>{w}</span>
+            ))}
+          </span>
+        </Rise>
       </h1>
     </div>
   );
