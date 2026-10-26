@@ -1,93 +1,113 @@
 import { useEffect, useRef, useState } from "react";
 
+const COUNT = 64;
+const CENTER = 40;
+
+/** Pinned string with smooth Verlet physics — plucked by the cursor, springs back. */
 function PhysicsString() {
   const svg = useRef<SVGSVGElement>(null);
   const path = useRef<SVGPathElement>(null);
 
   useEffect(() => {
     const element = svg.current;
-    if (!element || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let disposed = false;
-    let cleanup = () => {};
-    void import("matter-js").then(({ default: Matter }) => {
-      if (disposed) return;
-      const { Engine, Bodies, Body, Constraint, Composite } = Matter;
-      const engine = Engine.create({ gravity: { x: 0, y: 0 }, constraintIterations: 6 });
-      let width = element.clientWidth;
-      const center = 40;
-      const count = 30;
-      let nodes: ReturnType<typeof Bodies.circle>[] = [];
-      let frame = 0;
-      let previous = 0;
-      const reset = () => {
-        width = element.clientWidth;
-        Composite.clear(engine.world, false);
-        nodes = Array.from({ length: count + 1 }, (_, i) => Bodies.circle(width * i / count, center, 1, {
-          isStatic: i === 0 || i === count,
-          frictionAir: 0.035,
-          collisionFilter: { mask: 0 },
-        }));
-        Composite.add(engine.world, nodes);
-        nodes.forEach((node, i) => {
-          if (i > 0) Composite.add(engine.world, Constraint.create({ bodyA: nodes[i - 1], bodyB: node, stiffness: 0.9, damping: 0.025, length: width / count }));
-          if (!node.isStatic) Composite.add(engine.world, Constraint.create({ pointA: { x: width * i / count, y: center }, bodyB: node, length: 0, stiffness: 0.008, damping: 0.012 }));
-        });
-      };
-      const move = (event: PointerEvent) => {
-        const bounds = element.getBoundingClientRect();
-        const x = event.clientX - bounds.left;
-        const y = event.clientY - bounds.top;
-        if (x < 3 || x > width - 3 || Math.abs(y - center) > 32) return;
-        nodes.forEach((node, i) => {
-          const distance = Math.abs(width * i / count - x);
-          if (node.isStatic || distance > 36) return;
-          const influence = 1 - distance / 36;
-          const offset = (y - center || -8) * influence;
-          Body.setPosition(node, { x: width * i / count, y: center + offset });
-          Body.setVelocity(node, { x: 0, y: offset * 0.18 });
-        });
-      };
-      const loop = (time: number) => {
-        if (previous) Engine.update(engine, Math.min(time - previous, 1000 / 60));
-        previous = time;
-        path.current?.setAttribute("d", nodes.map((node, i) => `${i === 0 ? "M" : "L"}${node.position.x.toFixed(2)},${node.position.y.toFixed(2)}`).join(" "));
-        frame = requestAnimationFrame(loop);
-      };
-      reset();
-      const observer = new ResizeObserver(reset);
-      observer.observe(element);
-      element.addEventListener("pointermove", move);
+    if (!element) return;
+    let width = element.clientWidth;
+    const y = new Float32Array(COUNT + 1).fill(CENTER);
+    const prev = new Float32Array(COUNT + 1).fill(CENTER);
+    const impulse = new Float32Array(COUNT + 1);
+    let last: { x: number; y: number } | null = null;
+    let frame = 0;
+
+    const move = (event: PointerEvent) => {
+      const b = element.getBoundingClientRect();
+      const x = event.clientX - b.left;
+      const py = event.clientY - b.top;
+      const lastPt = last;
+      last = { x, y: py };
+      if (!lastPt || x < 0 || x > width) return;
+      const crossed = (lastPt.y - CENTER) * (py - CENTER) <= 0 && Math.abs(py - CENTER) < 60;
+      const near = Math.abs(py - CENTER) < 14;
+      if (!crossed && !near) return;
+      const vy = Math.max(-18, Math.min(18, py - lastPt.y));
+      const c = (x / width) * COUNT;
+      // Wide gaussian falloff, accumulated and applied on the next frame
+      for (let k = 1; k < COUNT; k++) {
+        const d = k - c;
+        impulse[k] = impulse[k]! + vy * 0.35 * Math.exp(-(d * d) / 40);
+      }
+    };
+
+    const loop = () => {
+      width = element.clientWidth;
+      for (let i = 1; i < COUNT; i++) {
+        const imp = Math.max(-10, Math.min(10, impulse[i]!));
+        impulse[i] = 0;
+        const v = (y[i]! - prev[i]!) * 0.975 + imp;
+        prev[i] = y[i]!;
+        y[i] = y[i]! + v + (CENTER - y[i]!) * 0.004;
+      }
+      for (let it = 0; it < 6; it++) {
+        for (let i = 1; i < COUNT; i++) {
+          const target = (y[i - 1]! + y[i + 1]!) / 2;
+          y[i] = y[i]! + (target - y[i]!) * 0.35;
+        }
+      }
+      // Smooth curve through midpoints
+      const step = width / COUNT;
+      let d = `M0,${CENTER}`;
+      for (let i = 1; i < COUNT; i++) {
+        const mx = (i + 0.5) * step;
+        const my = (y[i]! + y[i + 1]!) / 2;
+        d += ` Q${(i * step).toFixed(1)},${y[i]!.toFixed(2)} ${mx.toFixed(1)},${my.toFixed(2)}`;
+      }
+      d += ` L${width.toFixed(1)},${CENTER}`;
+      path.current?.setAttribute("d", d);
       frame = requestAnimationFrame(loop);
-      cleanup = () => {
-        cancelAnimationFrame(frame);
-        observer.disconnect();
-        element.removeEventListener("pointermove", move);
-        Composite.clear(engine.world, false);
-        Engine.clear(engine);
-      };
-    });
-    return () => { disposed = true; cleanup(); };
+    };
+
+    window.addEventListener("pointermove", move);
+    frame = requestAnimationFrame(loop);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("pointermove", move);
+    };
   }, []);
 
   return (
-    <svg ref={svg} className="h-20 min-w-0 flex-1 touch-pan-y overflow-visible text-foreground/30" aria-hidden="true" data-physics-string="">
-      <path ref={path} d="M0,40 H2000" fill="none" stroke="currentColor" strokeWidth="1" />
+    <svg ref={svg} className="h-20 min-w-0 flex-1 overflow-hidden text-foreground/50" aria-hidden="true" data-physics-string="">
+      <path ref={path} d="" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
+const WORD = Array.from("Developer");
+
 export function DeveloperTitle() {
-  const [active, setActive] = useState<number | null>(null);
+  const [pos, setPos] = useState<number | null>(null);
   return (
     <div className="mt-2 flex w-full items-center gap-3 md:gap-6">
       <PhysicsString />
-      <h2 aria-label="Developer" className="developer-title shrink-0 select-none font-display text-4xl font-black uppercase sm:text-5xl md:text-7xl" onPointerLeave={() => setActive(null)}>
+      <h2
+        aria-label="Developer"
+        className="developer-title shrink-0 select-none font-display text-4xl font-black uppercase sm:text-5xl md:text-7xl"
+        onPointerLeave={() => setPos(null)}
+        onPointerMove={(e) => {
+          const r = e.currentTarget.getBoundingClientRect();
+          setPos(((e.clientX - r.left) / r.width) * WORD.length - 0.5);
+        }}
+      >
         <span className="rise inline-flex py-5" style={{ animationDelay: "0.9s" }} aria-hidden="true">
-          {Array.from("Developer").map((letter, i) => (
-            <span key={i} className={`developer-letter ${i % 2 === 0 ? "developer-letter-up" : "developer-letter-down"} ${active === i ? "is-active" : active !== null && Math.abs(active - i) === 1 ? "is-neighbor" : ""}`} onPointerEnter={() => setActive(i)}>
-              <span>{letter}</span>
-            </span>
-          ))}
+          {WORD.map((letter, i) => {
+            const d = pos === null ? 99 : i - pos;
+            const strength = Math.exp(-(d * d) / 1.2);
+            const lift = -0.22 * strength;
+            const tilt = Math.max(-1, Math.min(1, d)) * 10 * strength;
+            return (
+              <span key={i} className="developer-letter">
+                <span style={{ transform: `translateY(${lift.toFixed(3)}em) rotate(${tilt.toFixed(2)}deg)` }}>{letter}</span>
+              </span>
+            );
+          })}
         </span>
       </h2>
       <PhysicsString />
