@@ -87,7 +87,7 @@ function WaterText() {
       onMouseLeave={() => (target.current = 0)}
     >
       <svg width="0" height="0" className="absolute">
-        <filter id="water">
+        <filter id="water" x="-10%" y="-30%" width="120%" height="160%">
           <feTurbulence ref={turb} type="fractalNoise" baseFrequency="0.012 0.04" numOctaves="2" seed="3" />
           <feDisplacementMap ref={disp} in="SourceGraphic" scale="0" />
         </filter>
