@@ -4,10 +4,10 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Creative Developer — Built from ideas" },
-      { name: "description", content: "Minimal portfolio of a creative developer. Built from ideas." },
-      { property: "og:title", content: "Creative Developer — Built from ideas" },
-      { property: "og:description", content: "Minimal portfolio of a creative developer." },
+      { title: "Built from ideas — Developer Portfolio" },
+      { name: "description", content: "Independent developer turning sketches into living interfaces." },
+      { property: "og:title", content: "Built from ideas — Developer Portfolio" },
+      { property: "og:description", content: "Independent developer turning sketches into living interfaces." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -24,10 +24,12 @@ function Rise({ children, delay = 0, className = "" }: { children: ReactNode; de
 }
 
 function Loader({ done }: { done: boolean }) {
+  const [n, setN] = useState(0);
+  useEffect(() => { const i = setInterval(() => setN((v) => Math.min(100, v + 3)), 45); return () => clearInterval(i); }, []);
   return (
-    <div className={`fixed inset-0 z-[60] flex flex-col items-center justify-center gap-6 bg-foreground text-background transition-transform duration-1000 ease-[cubic-bezier(.7,0,.3,1)] ${done ? "-translate-y-full" : ""}`}>
-      <Rise className="font-display text-5xl uppercase tracking-wide">Built from ideas</Rise>
-      <div className="h-px w-48 bg-background/20"><div className="loadbar h-px bg-background" /></div>
+    <div className={`fixed inset-0 z-[60] flex items-end justify-between bg-foreground p-8 text-background transition-[clip-path] duration-1000 ease-[cubic-bezier(.7,0,.3,1)] ${done ? "[clip-path:inset(0_0_100%_0)]" : "[clip-path:inset(0_0_0_0)]"}`}>
+      <span className="text-xs uppercase tracking-[0.3em]">Sketching ideas…</span>
+      <span className="font-display text-[22vw] italic leading-none">{String(n).padStart(3, "0")}</span>
     </div>
   );
 }
@@ -56,7 +58,7 @@ function Cursor() {
     <>
       <div ref={dot} className="pointer-events-none fixed left-0 top-0 z-[70] -ml-1 -mt-1 h-2 w-2 rounded-full bg-foreground" />
       <div ref={ring} className="pointer-events-none fixed left-0 top-0 z-[70]">
-        <div className={`-ml-6 -mt-6 h-12 w-12 rounded-full border-2 border-foreground transition-all duration-300 ${active ? "scale-100 opacity-100" : "scale-0 opacity-0"}`} />
+        <div className={`-ml-6 -mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-ember text-[10px] uppercase tracking-widest text-background transition-all duration-300 ${active ? "scale-100 opacity-100" : "scale-0 opacity-0"}`}>go</div>
       </div>
     </>
   );
@@ -90,8 +92,8 @@ function WaterText() {
           <feDisplacementMap ref={disp} in="SourceGraphic" scale="0" />
         </filter>
       </svg>
-      <h1 className="text-center font-display uppercase leading-[0.8] text-foreground" style={{ filter: "url(#water)" }}>
-        <Rise delay={0.6} className="text-[24vw] tracking-tight [transform:scaleY(1.35)] origin-bottom">Creative</Rise>
+      <h1 className="font-display italic leading-[0.75] text-foreground" style={{ filter: "url(#water)" }}>
+        <Rise delay={0.6} className="pb-[3vw] pr-[2vw] text-[30vw]">ideas<span className="text-ember">.</span></Rise>
       </h1>
     </div>
   );
@@ -99,7 +101,7 @@ function WaterText() {
 
 function Index() {
   const [done, setDone] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setDone(true), 1700); return () => clearTimeout(t); }, []);
+  useEffect(() => { const t = setTimeout(() => setDone(true), 1800); return () => clearTimeout(t); }, []);
   const links = ["Work", "About", "Projects", "Contact"];
   return (
     <main className="relative flex min-h-screen flex-col overflow-hidden px-6 md:px-10">
@@ -107,24 +109,28 @@ function Index() {
       <Cursor />
       {done && (
         <>
-          <nav className="grid grid-cols-3 items-center py-6 text-xs font-medium uppercase tracking-widest">
-            <a href="#" className="font-display text-lg normal-case tracking-normal"><Rise delay={0.4}>studio.</Rise></a>
-            <ul className="flex justify-center gap-8 md:gap-12">
+          <nav className="flex items-start justify-between py-6 text-[11px] uppercase tracking-[0.2em]">
+            <a href="#" className="p-2"><Rise delay={0.3}>[ J — 26 ]</Rise></a>
+            <ul className="flex gap-6 md:gap-10">
               {links.map((l, i) => (
-                <li key={l}><a href={`#${l.toLowerCase()}`} className="block p-2 transition-opacity hover:opacity-60"><Rise delay={0.5 + i * 0.08}>{l}</Rise></a></li>
+                <li key={l}><a href={`#${l.toLowerCase()}`} className="group block p-2"><Rise delay={0.4 + i * 0.08}><span className="text-ember">0{i + 1}</span> <span className="transition-opacity group-hover:opacity-50">{l}</span></Rise></a></li>
               ))}
             </ul>
-            <span />
+            <span className="hidden p-2 md:block"><Rise delay={0.7}>Local time · IST</Rise></span>
           </nav>
-          <section className="flex flex-1 flex-col items-center justify-center pt-[6vw]">
-            <WaterText />
-            <h2 className="mt-4 font-display text-4xl uppercase md:text-6xl"><Rise delay={0.9}>Developer</Rise></h2>
-            <p className="mt-4 text-sm uppercase tracking-[0.3em] text-muted-foreground"><Rise delay={1.1}>Built from ideas.</Rise></p>
+          <section className="grid flex-1 grid-cols-12 items-end gap-4 pb-8">
+            <div className="col-span-12 md:col-span-3 md:pb-[6vw]">
+              <p className="font-display text-4xl md:text-6xl"><Rise delay={0.5}>Built from</Rise></p>
+              <p className="mt-6 max-w-[26ch] text-xs leading-relaxed text-muted-foreground"><Rise delay={0.8}>Independent developer turning rough sketches into calm, living interfaces.</Rise></p>
+            </div>
+            <div className="col-span-12 md:col-span-9 md:text-right">
+              <WaterText />
+            </div>
           </section>
-          <footer className="flex justify-between py-6 text-xs uppercase tracking-widest text-muted-foreground">
-            <Rise delay={1.2}>©2026</Rise>
-            <a href="#work" className="p-2"><Rise delay={1.3}>Scroll to explore ↓</Rise></a>
-            <Rise delay={1.4}>Available for work</Rise>
+          <footer className="-mx-6 border-t border-foreground/20 py-4 md:-mx-10">
+            <div className="flex w-max marquee gap-12 whitespace-nowrap text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+              {Array.from({ length: 2 }).flatMap((_, k) => ["Interfaces", "✺", "Motion", "✺", "Systems", "✺", "Experiments", "✺", "Available 2026", "✺"].map((w, i) => <span key={`${k}-${i}`}>{w}</span>))}
+            </div>
           </footer>
         </>
       )}
