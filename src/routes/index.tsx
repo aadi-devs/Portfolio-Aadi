@@ -91,7 +91,7 @@ function WaterText() {
         </filter>
       </svg>
       <h1 className="text-center font-display uppercase leading-[0.8] text-foreground" style={{ filter: "url(#water)" }}>
-        <Rise delay={1.9} className="text-[24vw] tracking-tight [transform:scaleY(1.35)] origin-bottom">Creative</Rise>
+        <Rise delay={0.6} className="text-[24vw] tracking-tight [transform:scaleY(1.35)] origin-bottom">Creative</Rise>
       </h1>
     </div>
   );
