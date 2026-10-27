@@ -5,6 +5,7 @@ import { ContactFab } from "@/components/ContactFab";
 import { VibeCards } from "@/components/VibeCards";
 import { SmoothScroll, ScrollProgress, Reveal, Magnetic, StaticLine, autoScrollTo, onFrame, useAutoScrollIntent } from "@/components/Motion";
 import { AboutSection } from "@/components/AboutSection";
+import { ContactForm } from "@/components/ContactForm";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -149,12 +150,22 @@ const workTarget = () => {
   return el.getBoundingClientRect().top + scrollY + el.offsetHeight - innerHeight;
 };
 
+/** Next auto-scroll stop: first pause at About, then continue to the end of the card animation. */
+const nextTarget = () => {
+  const about = document.getElementById("about");
+  if (about) {
+    const aboutTop = Math.round(about.getBoundingClientRect().top + scrollY);
+    if (scrollY < aboutTop - 4) return aboutTop;
+  }
+  return workTarget();
+};
+
 function AutoScrollIntent() {
   useAutoScrollIntent(() => {
     const el = document.getElementById("work");
     // Only while the card animation track is still tall (it collapses once finished).
     if (!el || el.offsetHeight <= innerHeight * 1.5) return null;
-    return workTarget();
+    return nextTarget();
   });
   return null;
 }
@@ -197,7 +208,7 @@ function Index() {
                 type="button"
                 className="scroll-btn"
                 onClick={() => {
-                  const t = workTarget();
+                  const t = nextTarget();
                   if (t !== null) autoScrollTo(t);
                 }}
               >
@@ -211,10 +222,11 @@ function Index() {
           <StaticLine text="U Imagine I Build" />
           <AboutSection />
           <VibeCards />
-          <Reveal className="flex min-h-[70vh] flex-col items-center justify-center text-center">
+          <Reveal className="flex min-h-[40vh] flex-col items-center justify-center text-center">
             <p className="text-xs uppercase tracking-[0.4em] text-muted-foreground">Pick one. Or all three.</p>
-            <a href="#contact" id="contact" className="mt-6 font-display text-[min(14vw,22vh)] font-black uppercase leading-none"><Magnetic strength={0.15}>Let’s talk ↗</Magnetic></a>
+            <a href="#contact" className="mt-6 font-display text-[min(14vw,22vh)] font-black uppercase leading-none"><Magnetic strength={0.15}>Let’s talk ↗</Magnetic></a>
           </Reveal>
+          <section id="contact"><ContactForm /></section>
         </>
       )}
     </main>
