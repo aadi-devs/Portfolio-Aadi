@@ -222,11 +222,13 @@ function Index() {
           <StaticLine text="U Imagine I Build" />
           <AboutSection />
           <VibeCards />
-          <Reveal className="flex min-h-[40vh] flex-col items-center justify-center text-center">
-            <p className="text-xs uppercase tracking-[0.4em] text-muted-foreground">Pick one. Or all three.</p>
-            <a href="#contact" className="mt-6 font-display text-[min(14vw,22vh)] font-black uppercase leading-none"><Magnetic strength={0.15}>Let’s talk ↗</Magnetic></a>
-          </Reveal>
-          <section id="contact"><ContactForm /></section>
+          <section id="contact">
+            <Reveal className="flex flex-col items-center pb-[3vh] pt-[8vh] text-center">
+              <p className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">Say hello</p>
+              <h2 className="mt-5 font-display text-[min(10vw,15vh)] font-black uppercase leading-none">Let’s connect</h2>
+            </Reveal>
+            <ContactForm />
+          </section>
         </>
       )}
     </main>

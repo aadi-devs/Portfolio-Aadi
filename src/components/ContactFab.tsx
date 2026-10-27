@@ -49,7 +49,7 @@ export function ContactFab() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-display text-3xl font-black uppercase">Let’s talk</DialogTitle>
+            <DialogTitle className="font-display text-3xl font-black uppercase">Let’s connect</DialogTitle>
             <DialogDescription className="text-xs uppercase tracking-[0.3em]">Tap a name to copy</DialogDescription>
           </DialogHeader>
           <div>

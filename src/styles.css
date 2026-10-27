@@ -179,3 +179,18 @@ a,button{cursor:none}
 @utility scroll-btn{display:inline-flex;align-items:center;gap:.75em;padding:.7em 1.4em;border:1px solid color-mix(in oklab,var(--foreground) 35%,transparent);border-radius:9999px;color:var(--foreground);letter-spacing:.3em;text-transform:uppercase;background:color-mix(in oklab,var(--background) 40%,transparent);backdrop-filter:blur(8px);transition:background .4s cubic-bezier(.2,.8,.2,1),color .4s,border-color .4s,transform .4s cubic-bezier(.2,.8,.2,1);&:hover{background:var(--foreground);color:var(--background);border-color:var(--foreground);transform:translateY(-2px)}}
 @utility scroll-btn-arrow{display:inline-block;animation:scroll-bob 1.6s ease-in-out infinite}
 @keyframes scroll-bob{0%,100%{transform:translateY(-2px)}50%{transform:translateY(3px)}}
+
+/* ---- contact: sent confirmation ---- */
+@keyframes done-ring{0%{transform:scale(.55);opacity:0}55%{transform:scale(1.08);opacity:1}100%{transform:scale(1);opacity:1}}
+@utility done-ring{animation:done-ring .8s cubic-bezier(.2,.8,.2,1) both}
+@keyframes done-draw{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@utility done-draw{stroke-dasharray:40;animation:done-draw .9s .45s cubic-bezier(.6,0,.3,1) both}
+@keyframes done-rise{0%{opacity:0;filter:blur(16px);transform:translateY(80px) scale(.94)}100%{opacity:1;filter:blur(0);transform:none}}
+@utility done-rise{animation:done-rise 1.1s cubic-bezier(.2,.8,.2,1) both}
+@keyframes done-fade{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:none}}
+@utility done-fade{animation:done-fade .9s cubic-bezier(.2,.8,.2,1) both}
+@keyframes done-line{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@utility done-line{transform-origin:center;animation:done-line 1.2s cubic-bezier(.7,0,.2,1) both}
+
+/* ---- contact: submit button (sits on the dark brief panel) ---- */
+@utility send-btn{display:inline-flex;align-items:center;gap:.75em;padding:.85em 1.6em;border:1px solid var(--background);border-radius:9999px;background:var(--background);color:var(--foreground);font-size:11px;letter-spacing:.3em;text-transform:uppercase;transition:background .4s cubic-bezier(.2,.8,.2,1),color .4s,border-color .4s,transform .4s cubic-bezier(.2,.8,.2,1);&:hover{background:transparent;color:var(--background);border-color:var(--background);transform:translateY(-2px)}}

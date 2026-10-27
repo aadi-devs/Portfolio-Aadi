@@ -95,10 +95,13 @@ export function Reveal({ children, className = "", delay = 0 }: { children: Reac
   const ref = useRef<HTMLDivElement>(null);
   const [on, setOn] = useState(false);
   useEffect(() => {
-    const io = new IntersectionObserver(([e]) => e?.isIntersecting && setOn(true), { threshold: 0.2 });
-    if (ref.current) io.observe(ref.current);
-    return () => io.disconnect();
-  }, []);
+    if (on) return;
+    // overflow-x:clip on <main> makes IntersectionObserver report nothing as visible, so compare against the viewport directly.
+    return onFrame(() => {
+      const r = ref.current?.getBoundingClientRect();
+      if (r && r.top < innerHeight * 0.8 && r.bottom > 0) setOn(true);
+    });
+  }, [on]);
   return <div ref={ref} className={`reveal ${on ? "reveal-in" : ""} ${className}`} style={{ transitionDelay: `${delay}s` }}>{children}</div>;
 }
 

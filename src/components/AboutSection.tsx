@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { onFrame } from "./Motion";
 
 const RobotScene = lazy(() => import("./RobotScene"));
 
@@ -10,9 +11,11 @@ export function AboutSection() {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     setMounted(true);
-    const io = new IntersectionObserver(([e]) => e && setVisible(e.isIntersecting), { threshold: 0.3 });
-    if (ref.current) io.observe(ref.current);
-    return () => io.disconnect();
+    // overflow-x:clip on <main> makes IntersectionObserver report nothing as visible, so compare against the viewport directly.
+    return onFrame(() => {
+      const r = ref.current?.getBoundingClientRect();
+      setVisible(!!r && r.top < innerHeight * 0.7 && r.bottom > innerHeight * 0.3);
+    });
   }, []);
 
   return (
