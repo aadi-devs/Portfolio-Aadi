@@ -79,7 +79,7 @@ function PhysicsString() {
   }, []);
 
   return (
-    <svg ref={svg} className="h-28 min-w-0 flex-1 overflow-hidden text-foreground/50" aria-hidden="true" data-physics-string="">
+    <svg ref={svg} className="h-[clamp(3rem,14vh,7rem)] min-w-0 flex-1 overflow-hidden text-foreground/50" aria-hidden="true" data-physics-string="">
       <path ref={path} d="" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
@@ -94,14 +94,14 @@ export function DeveloperTitle() {
       <PhysicsString />
       <h2
         aria-label="Developer"
-        className="developer-title shrink-0 select-none font-display text-4xl font-black uppercase sm:text-5xl md:text-7xl"
+        className="developer-title shrink-0 select-none font-display text-[clamp(2rem,min(9vw,10vh),4.5rem)] font-black uppercase"
         onPointerLeave={() => setPos(null)}
         onPointerMove={(e) => {
           const r = e.currentTarget.getBoundingClientRect();
           setPos(((e.clientX - r.left) / r.width) * WORD.length - 0.5);
         }}
       >
-        <span className="rise inline-flex py-5" style={{ animationDelay: "0.9s" }} aria-hidden="true">
+        <span className="rise inline-flex py-[clamp(0.5rem,2vh,1.25rem)]" style={{ animationDelay: "0.9s" }} aria-hidden="true">
           {WORD.map((letter, i) => {
             const d = pos === null ? 99 : i - pos;
             const strength = Math.exp(-(d * d) / 1.2);

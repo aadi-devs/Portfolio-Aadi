@@ -1,12 +1,12 @@
 # Aadi Portfolio
 
-clone https://github.com/victusxxgaming-design/aadi-portfolio
+clone https://github.com/victusxxgaming-design/aadi-portfolio/tree/V.1
 
 This project was built with [Lovable](https://lovable.dev).
 
 ## Build with Lovable
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/cae635ce-b399-407d-9b99-1c0781d8ceda).
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/8966e6c1-0c57-4484-a994-326cde916749).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
 - **Stay in sync**: every change made in Lovable is committed straight to this repository.

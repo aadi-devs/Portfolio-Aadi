@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { DeveloperTitle } from "@/components/DeveloperTitle";
+import { ContactFab } from "@/components/ContactFab";
+import { VibeCards } from "@/components/VibeCards";
+import { SmoothScroll, ScrollProgress, Reveal, Magnetic, StaticLine, autoScrollTo, useAutoScrollIntent } from "@/components/Motion";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -112,7 +115,7 @@ function WaterText() {
         </filter>
       </svg>
       <h1 className="text-center font-display font-black uppercase leading-[0.85] text-foreground" style={{ filter: "url(#water)" }}>
-        <Rise delay={0.6} wide className="pt-[0.1em] text-[27vw] tracking-[-0.02em]">
+        <Rise delay={0.6} wide className="pt-[0.1em] text-[min(27vw,32vh)] tracking-[-0.02em]">
           <span className="grid">
             {WORDS.map((w, i) => (
               <span key={w} aria-hidden={i !== idx} className={`col-start-1 row-start-1 transition-all duration-[1400ms] ease-[cubic-bezier(.7,0,.2,1)] ${i === idx ? "opacity-100 blur-0 [transform:scaleY(1)] tracking-[-0.02em]" : "opacity-0 blur-2xl [transform:scaleY(0.4)] tracking-[0.2em]"}`}>{w}</span>
@@ -124,35 +127,95 @@ function WaterText() {
   );
 }
 
+function HeroOut({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    let raf = 0;
+    const loop = () => {
+      const p = Math.min(1, scrollY / innerHeight);
+      if (ref.current) {
+        ref.current.style.transform = `translateY(${-p * 25}vh) scale(${1 - p * 0.08})`;
+        ref.current.style.opacity = String(1 - p * 0.9);
+        ref.current.style.filter = `blur(${p * 8}px)`;
+      }
+      raf = requestAnimationFrame(loop);
+    };
+    loop(); return () => cancelAnimationFrame(raf);
+  }, []);
+  return <div ref={ref} className="flex min-h-screen flex-col will-change-transform">{children}</div>;
+}
+
+const workTarget = () => {
+  const el = document.getElementById("work");
+  if (!el) return null;
+  return el.getBoundingClientRect().top + scrollY + el.offsetHeight - innerHeight;
+};
+
+function AutoScrollIntent() {
+  useAutoScrollIntent(() => {
+    const el = document.getElementById("work");
+    // Only while the card animation track is still tall (it collapses once finished).
+    if (!el || el.offsetHeight <= innerHeight * 1.5) return null;
+    return workTarget();
+  });
+  return null;
+}
+
 function Index() {
   const [done, setDone] = useState(false);
   useEffect(() => { const t = setTimeout(() => setDone(true), 4200); return () => clearTimeout(t); }, []);
   const links = ["Work", "About", "Projects", "Contact"];
   return (
-    <main className="relative flex min-h-screen flex-col overflow-hidden px-6 md:px-10">
+    <main className="relative overflow-x-clip px-6 md:px-10">
+      <div className="blob -left-[10vw] -top-[10vw]" />
+      <div className="blob -bottom-[15vw] -right-[10vw] [animation-delay:-11s]" />
       <Loader done={done} />
       <Cursor />
       {done && (
         <>
-          <nav className="grid grid-cols-3 items-center py-6 text-[11px] font-medium uppercase tracking-[0.25em]">
-            <a href="#" aria-label="Victus" className="justify-self-start px-2 text-4xl leading-none" style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 700, letterSpacing: "0.02em" }}><Rise delay={0.3}>Victus</Rise></a>
-            <ul className="flex justify-center gap-6 md:gap-12">
+          <SmoothScroll />
+          <AutoScrollIntent />
+          <ContactFab />
+          <ScrollProgress />
+          <HeroOut>
+          <nav className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 py-[clamp(0.75rem,2.5vh,1.5rem)] text-[clamp(9px,2.6vw,11px)] font-medium uppercase tracking-[0.18em] lg:grid-cols-[1fr_auto_1fr] lg:tracking-[0.25em]">
+            <a href="#" aria-label="Victus" className="min-w-0 justify-self-start px-1 text-[clamp(1.6rem,6vw,2.25rem)] leading-none" style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 700, letterSpacing: "0.02em" }}><Rise delay={0.3}>Victus</Rise></a>
+            <span className="shrink-0 justify-self-end whitespace-nowrap p-1 text-muted-foreground lg:col-start-3 lg:row-start-1"><Rise delay={0.7}>Portfolio ’26</Rise></span>
+            <ul className="col-span-2 flex justify-between gap-2 border-t border-foreground/10 pt-2 sm:justify-center sm:gap-8 lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:gap-12 lg:border-0 lg:pt-0">
               {links.map((l, i) => (
-                <li key={l}><a href={`#${l.toLowerCase()}`} className="block p-2 transition-opacity hover:opacity-50"><Rise delay={0.4 + i * 0.07}>{l}</Rise></a></li>
+                <li key={l}><a href={`#${l.toLowerCase()}`} className="block whitespace-nowrap p-1 transition-opacity hover:opacity-50 sm:p-2"><Magnetic><Rise delay={0.4 + i * 0.07}>{l}</Rise></Magnetic></a></li>
               ))}
             </ul>
-            <span className="justify-self-end p-2 text-muted-foreground"><Rise delay={0.7}>Portfolio ’26</Rise></span>
           </nav>
-          <section className="flex flex-1 flex-col items-center justify-center">
+          <section className="flex min-h-0 flex-1 flex-col items-center justify-center py-[2vh]">
             <WaterText />
             <DeveloperTitle />
-            <p className="mt-5 text-xs uppercase tracking-[0.4em]"><Rise delay={1.05}>Built from ideas.</Rise></p>
+            <p className="mt-[clamp(0.5rem,2vh,1.25rem)] text-center text-[clamp(9px,2.8vw,12px)] uppercase tracking-[0.3em] sm:tracking-[0.4em]"><Rise delay={1.05}>Built from ideas.</Rise></p>
           </section>
-          <footer className="flex items-end justify-between py-6 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+          <footer className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 py-[clamp(0.75rem,2.5vh,1.5rem)] text-[clamp(9px,2.5vw,11px)] uppercase tracking-[0.15em] text-muted-foreground sm:tracking-[0.25em] [&>*:first-child]:justify-self-start [&>*:last-child]:justify-self-end [&>*:last-child]:text-right">
             <Rise delay={1.2}>©2026</Rise>
-            <a href="#work" className="p-2"><Rise delay={1.3}>Scroll ↓</Rise></a>
+            <Rise delay={1.3}>
+              <button
+                type="button"
+                className="scroll-btn"
+                onClick={() => {
+                  const t = workTarget();
+                  if (t !== null) autoScrollTo(t);
+                }}
+              >
+                <span>Scroll</span>
+                <span className="scroll-btn-arrow" aria-hidden>↓</span>
+              </button>
+            </Rise>
             <Rise delay={1.4}>Open to work</Rise>
           </footer>
+          </HeroOut>
+          <StaticLine text="U Imagine I Build" />
+          <VibeCards />
+          <Reveal className="flex min-h-[70vh] flex-col items-center justify-center text-center">
+            <p className="text-xs uppercase tracking-[0.4em] text-muted-foreground">Pick one. Or all three.</p>
+            <a href="#contact" id="contact" className="mt-6 font-display text-[min(14vw,22vh)] font-black uppercase leading-none"><Magnetic strength={0.15}>Let’s talk ↗</Magnetic></a>
+          </Reveal>
         </>
       )}
     </main>
