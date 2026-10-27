@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Keep Developer title interactions in their own component; dynamically load Matter.js only in its browser effect for pinned string physics so SSR stays browser-independent.
+- Scroll-linked animations subscribe to onFrame() in src/components/Motion.tsx instead of their own requestAnimationFrame, so they update in the same frame as Lenis smooth scroll (separate loops cause jitter).

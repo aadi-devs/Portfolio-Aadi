@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { reduced, shiftScroll } from "./Motion";
+import { onFrame, reduced, shiftScroll } from "./Motion";
 
 const CARDS = [
   { n: "01", t: "Minecraft Development", d: "Worlds, mods and servers built block by block." },
@@ -21,7 +21,6 @@ export function VibeCards() {
   const done = useRef(false); // once finished, cards stay landed (no reverse on scroll up)
 
   useEffect(() => {
-    let raf = 0;
     const still = reduced();
     const loop = () => {
       const el = sec.current;
@@ -63,9 +62,10 @@ export function VibeCards() {
         landed.current = p > 0.97;
         cards.current.forEach((c, i) => {
           if (!c) return;
-          c.style.width = `${cw}px`;
-          c.style.height = `${ch}px`;
-          c.dataset["compact"] = stack ? "1" : "0";
+          const W = `${cw}px`, H = `${ch}px`, C = stack ? "1" : "0";
+          if (c.style.width !== W) c.style.width = W;
+          if (c.style.height !== H) c.style.height = H;
+          if (c.dataset["compact"] !== C) c.dataset["compact"] = C;
           const a = (i / 3) * Math.PI * 2 + orbit * Math.PI * 2 - Math.PI / 2;
           const R = Math.min(w * 0.3, availH * 0.4);
           const ox = Math.cos(a) * R, oy = Math.sin(a) * R * 0.8 + cy;
@@ -73,15 +73,14 @@ export function VibeCards() {
           const fy = stack ? cy + (i - 1) * (ch + gap) : cy;
           const x = ox + (fx - ox) * land, y = oy + (fy - oy) * land;
           const spin = 360 - orbit * 360; // full 360 turn, ends upright
-          c.style.transform = `translate(-50%,-50%) translate(${x}px,${y}px) rotate(${spin * (1 - land)}deg) scale(${0.65 + land * 0.35})`;
+          c.style.transform = `translate(-50%,-50%) translate3d(${x}px,${y}px,0) rotate(${spin * (1 - land)}deg) scale(${0.65 + land * 0.35})`;
           c.style.zIndex = String(Math.round(Math.sin(a) * 10) + 20);
           c.style.opacity = String(clamp(p * 6));
         });
       }
-      raf = requestAnimationFrame(loop);
     };
     loop();
-    return () => cancelAnimationFrame(raf);
+    return onFrame(loop);
   }, []);
 
   return (

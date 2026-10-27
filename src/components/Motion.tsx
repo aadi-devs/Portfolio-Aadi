@@ -6,6 +6,16 @@ export const reduced = () => false;
 type LenisLike = { raf: (t: number) => void; destroy: () => void; scrollTo: (t: number, o?: { duration?: number; easing?: (t: number) => number }) => void };
 let activeLenis: LenisLike | null = null;
 
+/** One shared frame loop: Lenis updates scroll first, then every animation reads the same position (no frame lag = no jitter). */
+const subs = new Set<() => void>();
+let tickRaf = 0;
+const tick = (t: number) => { activeLenis?.raf(t); subs.forEach((f) => f()); tickRaf = requestAnimationFrame(tick); };
+export function onFrame(f: () => void) {
+  subs.add(f);
+  if (!tickRaf) tickRaf = requestAnimationFrame(tick);
+  return () => { subs.delete(f); };
+}
+
 /**
  * Auto-scroll at a steady, cinematic speed (used by the Scroll button).
  * Speed is tied to screen height so the card animation plays at the same pace on every device;
@@ -58,14 +68,14 @@ export function shiftScroll(delta: number) {
 export function SmoothScroll() {
   useEffect(() => {
     if (reduced()) return;
-    let raf = 0; let lenis: LenisLike | null = null;
+    let lenis: LenisLike | null = null; let dead = false;
+    const keep = onFrame(() => {});
     import("lenis").then(({ default: Lenis }) => {
-      lenis = new Lenis({ lerp: 0.09 }) as unknown as LenisLike;
+      if (dead) return;
+      lenis = new Lenis({ lerp: 0.1, autoRaf: false } as object) as unknown as LenisLike;
       activeLenis = lenis;
-      const loop = (t: number) => { lenis?.raf(t); raf = requestAnimationFrame(loop); };
-      raf = requestAnimationFrame(loop);
     });
-    return () => { cancelAnimationFrame(raf); lenis?.destroy(); activeLenis = null; };
+    return () => { dead = true; keep(); lenis?.destroy(); activeLenis = null; };
   }, []);
   return null;
 }
@@ -73,13 +83,10 @@ export function SmoothScroll() {
 export function ScrollProgress() {
   const bar = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    let raf = 0;
-    const loop = () => {
+    return onFrame(() => {
       const max = document.documentElement.scrollHeight - innerHeight;
       if (bar.current) bar.current.style.transform = `scaleX(${max > 0 ? scrollY / max : 0})`;
-      raf = requestAnimationFrame(loop);
-    };
-    loop(); return () => cancelAnimationFrame(raf);
+    });
   }, []);
   return <div ref={bar} className="fixed left-0 top-0 z-[55] h-[2px] w-full origin-left bg-foreground" style={{ transform: "scaleX(0)" }} />;
 }

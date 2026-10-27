@@ -3,7 +3,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { DeveloperTitle } from "@/components/DeveloperTitle";
 import { ContactFab } from "@/components/ContactFab";
 import { VibeCards } from "@/components/VibeCards";
-import { SmoothScroll, ScrollProgress, Reveal, Magnetic, StaticLine, autoScrollTo, useAutoScrollIntent } from "@/components/Motion";
+import { SmoothScroll, ScrollProgress, Reveal, Magnetic, StaticLine, autoScrollTo, onFrame, useAutoScrollIntent } from "@/components/Motion";
+import { AboutSection } from "@/components/AboutSection";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -130,17 +131,14 @@ function WaterText() {
 function HeroOut({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    let raf = 0;
-    const loop = () => {
+    let last = -1;
+    return onFrame(() => {
       const p = Math.min(1, scrollY / innerHeight);
-      if (ref.current) {
-        ref.current.style.transform = `translateY(${-p * 25}vh) scale(${1 - p * 0.08})`;
-        ref.current.style.opacity = String(1 - p * 0.9);
-        ref.current.style.filter = `blur(${p * 8}px)`;
-      }
-      raf = requestAnimationFrame(loop);
-    };
-    loop(); return () => cancelAnimationFrame(raf);
+      if (!ref.current || p === last) return;
+      last = p;
+      ref.current.style.transform = `translate3d(0,${-p * 25}vh,0) scale(${1 - p * 0.08})`;
+      ref.current.style.opacity = String(1 - p * 0.9);
+    });
   }, []);
   return <div ref={ref} className="flex min-h-screen flex-col will-change-transform">{children}</div>;
 }
@@ -211,6 +209,7 @@ function Index() {
           </footer>
           </HeroOut>
           <StaticLine text="U Imagine I Build" />
+          <AboutSection />
           <VibeCards />
           <Reveal className="flex min-h-[70vh] flex-col items-center justify-center text-center">
             <p className="text-xs uppercase tracking-[0.4em] text-muted-foreground">Pick one. Or all three.</p>
