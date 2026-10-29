@@ -3,17 +3,27 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 // Animations are mandatory: the device "reduce motion" setting is intentionally ignored.
 export const reduced = () => false;
 
-type LenisLike = { raf: (t: number) => void; destroy: () => void; scrollTo: (t: number, o?: { duration?: number; easing?: (t: number) => number }) => void };
+type LenisLike = {
+  raf: (t: number) => void;
+  destroy: () => void;
+  scrollTo: (t: number, o?: { duration?: number; easing?: (t: number) => number }) => void;
+};
 let activeLenis: LenisLike | null = null;
 
 /** One shared frame loop: Lenis updates scroll first, then every animation reads the same position (no frame lag = no jitter). */
 const subs = new Set<() => void>();
 let tickRaf = 0;
-const tick = (t: number) => { activeLenis?.raf(t); subs.forEach((f) => f()); tickRaf = requestAnimationFrame(tick); };
+const tick = (t: number) => {
+  activeLenis?.raf(t);
+  subs.forEach((f) => f());
+  tickRaf = requestAnimationFrame(tick);
+};
 export function onFrame(f: () => void) {
   subs.add(f);
   if (!tickRaf) tickRaf = requestAnimationFrame(tick);
-  return () => { subs.delete(f); };
+  return () => {
+    subs.delete(f);
+  };
 }
 
 /**
@@ -27,7 +37,10 @@ const steady = (t: number) => {
   // integral of a trapezoid velocity profile, normalised to 0..1
   const v = 1 / (1 - RAMP);
   if (t < RAMP) return (v * t * t) / (2 * RAMP);
-  if (t > 1 - RAMP) { const r = 1 - t; return 1 - (v * r * r) / (2 * RAMP); }
+  if (t > 1 - RAMP) {
+    const r = 1 - t;
+    return 1 - (v * r * r) / (2 * RAMP);
+  }
   return v * (t - RAMP / 2);
 };
 let autoRaf = 0;
@@ -44,7 +57,11 @@ export function autoScrollTo(target: number) {
   const step = (now: number) => {
     const t = Math.min(1, (now - t0) / (duration * 1000));
     const y = start + (target - start) * steady(t);
-    if (activeLenis) (activeLenis as unknown as { scrollTo: (y: number, o: object) => void }).scrollTo(y, { immediate: true, force: true });
+    if (activeLenis)
+      (activeLenis as unknown as { scrollTo: (y: number, o: object) => void }).scrollTo(y, {
+        immediate: true,
+        force: true,
+      });
     else window.scrollTo({ top: y, behavior: "instant" as ScrollBehavior });
     if (t < 1) autoRaf = requestAnimationFrame(step);
     else autoRunning = false;
@@ -61,21 +78,30 @@ export function shiftScroll(delta: number) {
   window.scrollTo({ top: y, behavior: "instant" as ScrollBehavior });
   if (activeLenis) {
     (activeLenis as unknown as { resize?: () => void }).resize?.();
-    (activeLenis as unknown as { scrollTo: (y: number, o: object) => void }).scrollTo(y, { immediate: true, force: true });
+    (activeLenis as unknown as { scrollTo: (y: number, o: object) => void }).scrollTo(y, {
+      immediate: true,
+      force: true,
+    });
   }
 }
 
 export function SmoothScroll() {
   useEffect(() => {
     if (reduced()) return;
-    let lenis: LenisLike | null = null; let dead = false;
+    let lenis: LenisLike | null = null;
+    let dead = false;
     const keep = onFrame(() => {});
     import("lenis").then(({ default: Lenis }) => {
       if (dead) return;
       lenis = new Lenis({ lerp: 0.1, autoRaf: false } as object) as unknown as LenisLike;
       activeLenis = lenis;
     });
-    return () => { dead = true; keep(); lenis?.destroy(); activeLenis = null; };
+    return () => {
+      dead = true;
+      keep();
+      lenis?.destroy();
+      activeLenis = null;
+    };
   }, []);
   return null;
 }
@@ -88,10 +114,24 @@ export function ScrollProgress() {
       if (bar.current) bar.current.style.transform = `scaleX(${max > 0 ? scrollY / max : 0})`;
     });
   }, []);
-  return <div ref={bar} className="fixed left-0 top-0 z-[55] h-[2px] w-full origin-left bg-foreground" style={{ transform: "scaleX(0)" }} />;
+  return (
+    <div
+      ref={bar}
+      className="fixed left-0 top-0 z-[55] h-[2px] w-full origin-left bg-foreground"
+      style={{ transform: "scaleX(0)" }}
+    />
+  );
 }
 
-export function Reveal({ children, className = "", delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
+export function Reveal({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [on, setOn] = useState(false);
   useEffect(() => {
@@ -102,10 +142,24 @@ export function Reveal({ children, className = "", delay = 0 }: { children: Reac
       if (r && r.top < innerHeight * 0.8 && r.bottom > 0) setOn(true);
     });
   }, [on]);
-  return <div ref={ref} className={`reveal ${on ? "reveal-in" : ""} ${className}`} style={{ transitionDelay: `${delay}s` }}>{children}</div>;
+  return (
+    <div
+      ref={ref}
+      className={`reveal ${on ? "reveal-in" : ""} ${className}`}
+      style={{ transitionDelay: `${delay}s` }}
+    >
+      {children}
+    </div>
+  );
 }
 
-export function Magnetic({ children, strength = 0.35 }: { children: ReactNode; strength?: number }) {
+export function Magnetic({
+  children,
+  strength = 0.35,
+}: {
+  children: ReactNode;
+  strength?: number;
+}) {
   const ref = useRef<HTMLSpanElement>(null);
   return (
     <span
@@ -116,7 +170,9 @@ export function Magnetic({ children, strength = 0.35 }: { children: ReactNode; s
         e.currentTarget.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * strength}px,${(e.clientY - r.top - r.height / 2) * strength}px)`;
       }}
       onMouseLeave={(e) => (e.currentTarget.style.transform = "")}
-    >{children}</span>
+    >
+      {children}
+    </span>
   );
 }
 
@@ -139,7 +195,11 @@ export function useAutoScrollIntent(getTarget: () => number | null) {
   useEffect(() => {
     let touchY = 0;
     const handle = (e: Event, down: boolean) => {
-      if (autoRunning) { if (e.cancelable) e.preventDefault(); e.stopPropagation(); return; }
+      if (autoRunning) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
       if (!down) return;
       const target = ref.current();
       const cur = activeLenis ? (activeLenis as unknown as { scroll: number }).scroll : scrollY;
@@ -149,7 +209,9 @@ export function useAutoScrollIntent(getTarget: () => number | null) {
       autoScrollTo(target);
     };
     const wheel = (e: WheelEvent) => handle(e, e.deltaY > 0);
-    const tStart = (e: TouchEvent) => { touchY = e.touches[0]?.clientY ?? 0; };
+    const tStart = (e: TouchEvent) => {
+      touchY = e.touches[0]?.clientY ?? 0;
+    };
     const tMove = (e: TouchEvent) => handle(e, touchY - (e.touches[0]?.clientY ?? touchY) > 6);
     const key = (e: KeyboardEvent) => {
       const downKeys = ["ArrowDown", "PageDown", " ", "Spacebar", "End"];

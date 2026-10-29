@@ -4,23 +4,58 @@ import { createContext, useContext, useMemo, useRef, type ReactNode } from "reac
 import * as THREE from "three";
 
 // Palette matched to the site (cream paper, espresso ink, warm amber accent).
-const C = { body: "#efe4d2", joint: "#cdbfa8", dark: "#22170f", chair: "#2b1d15", accent: "#d9773b", eye: "#ffcf8a" };
+const C = {
+  body: "#efe4d2",
+  joint: "#cdbfa8",
+  dark: "#22170f",
+  chair: "#2b1d15",
+  accent: "#d9773b",
+  eye: "#ffcf8a",
+};
 
 // Feel constants
-const ENTRY_K = 38, ENTRY_C = 5.5; // underdamped spring: slides in, overshoots, settles
-const SPIN_DRAG = 2.2, SPIN_HOME_K = 1.4;
-const PART_K = 70, PART_C = 7;
+const ENTRY_K = 38,
+  ENTRY_C = 5.5; // underdamped spring: slides in, overshoots, settles
+const SPIN_DRAG = 2.2,
+  SPIN_HOME_K = 1.4;
+const PART_K = 70,
+  PART_C = 7;
 
 type Kick = { t: number; origin: THREE.Vector3; power: number };
-const KickCtx = createContext<{ current: Kick }>({ current: { t: -1, origin: new THREE.Vector3(), power: 0 } });
+const KickCtx = createContext<{ current: Kick }>({
+  current: { t: -1, origin: new THREE.Vector3(), power: 0 },
+});
 
-function Block({ p, s, color = C.body, r = 0.06, emissive, rot }: { p: [number, number, number]; s: [number, number, number]; color?: string; r?: number; emissive?: number; rot?: [number, number, number] }) {
+function Block({
+  p,
+  s,
+  color = C.body,
+  r = 0.06,
+  emissive,
+  rot,
+}: {
+  p: [number, number, number];
+  s: [number, number, number];
+  color?: string;
+  r?: number;
+  emissive?: number;
+  rot?: [number, number, number];
+}) {
   const kick = useContext(KickCtx);
   const ref = useRef<THREE.Mesh>(null);
-  const st = useRef({ off: new THREE.Vector3(), vel: new THREE.Vector3(), spin: new THREE.Vector3(), ang: new THREE.Vector3(), seen: -1, hover: 0 });
+  const st = useRef({
+    off: new THREE.Vector3(),
+    vel: new THREE.Vector3(),
+    spin: new THREE.Vector3(),
+    ang: new THREE.Vector3(),
+    seen: -1,
+    hover: 0,
+  });
   const rest = useMemo(() => new THREE.Vector3(...p), [p]);
   useFrame((_, raw) => {
-    const dt = Math.min(raw, 0.05), m = ref.current, s0 = st.current;
+    const dt = Math.min(raw, 0.05),
+      m = ref.current,
+      s0 = st.current;
     if (!m) return;
     if (kick.current.t !== s0.seen) {
       s0.seen = kick.current.t;
@@ -28,16 +63,34 @@ function Block({ p, s, color = C.body, r = 0.06, emissive, rot }: { p: [number, 
       const dir = wp.sub(kick.current.origin);
       const d = Math.max(0.3, dir.length());
       const f = (kick.current.power * 2.2) / d;
-      s0.vel.addScaledVector(dir.normalize(), f).add(new THREE.Vector3((Math.random() - 0.5) * f, Math.random() * f * 0.6, (Math.random() - 0.5) * f));
-      s0.ang.add(new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(f * 3));
+      s0.vel
+        .addScaledVector(dir.normalize(), f)
+        .add(
+          new THREE.Vector3(
+            (Math.random() - 0.5) * f,
+            Math.random() * f * 0.6,
+            (Math.random() - 0.5) * f,
+          ),
+        );
+      s0.ang.add(
+        new THREE.Vector3(
+          Math.random() - 0.5,
+          Math.random() - 0.5,
+          Math.random() - 0.5,
+        ).multiplyScalar(f * 3),
+      );
     }
     s0.vel.addScaledVector(s0.off, -PART_K * dt).multiplyScalar(Math.exp(-PART_C * dt));
     s0.off.addScaledVector(s0.vel, dt);
     s0.ang.addScaledVector(s0.spin, -PART_K * dt).multiplyScalar(Math.exp(-PART_C * dt));
     s0.spin.addScaledVector(s0.ang, dt);
-    s0.hover += ((m.userData['h'] ? 1 : 0) - s0.hover) * (1 - Math.exp(-14 * dt));
+    s0.hover += ((m.userData["h"] ? 1 : 0) - s0.hover) * (1 - Math.exp(-14 * dt));
     m.position.copy(rest).add(s0.off);
-    m.rotation.set((rot?.[0] ?? 0) + s0.spin.x, (rot?.[1] ?? 0) + s0.spin.y, (rot?.[2] ?? 0) + s0.spin.z);
+    m.rotation.set(
+      (rot?.[0] ?? 0) + s0.spin.x,
+      (rot?.[1] ?? 0) + s0.spin.y,
+      (rot?.[2] ?? 0) + s0.spin.z,
+    );
     m.scale.setScalar(1 + s0.hover * 0.08);
   });
   return (
@@ -48,10 +101,23 @@ function Block({ p, s, color = C.body, r = 0.06, emissive, rot }: { p: [number, 
       smoothness={2}
       castShadow
       receiveShadow
-      onPointerOver={(e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); (e.object.userData['h'] = true); document.body.style.cursor = "grab"; }}
-      onPointerOut={(e: ThreeEvent<PointerEvent>) => { e.object.userData['h'] = false; document.body.style.cursor = ""; }}
+      onPointerOver={(e: ThreeEvent<PointerEvent>) => {
+        e.stopPropagation();
+        e.object.userData["h"] = true;
+        document.body.style.cursor = "grab";
+      }}
+      onPointerOut={(e: ThreeEvent<PointerEvent>) => {
+        e.object.userData["h"] = false;
+        document.body.style.cursor = "";
+      }}
     >
-      <meshStandardMaterial color={color} roughness={0.55} metalness={0.05} emissive={emissive ? color : "#000"} emissiveIntensity={emissive ?? 0} />
+      <meshStandardMaterial
+        color={color}
+        roughness={0.55}
+        metalness={0.05}
+        emissive={emissive ? color : "#000"}
+        emissiveIntensity={emissive ?? 0}
+      />
     </RoundedBox>
   );
 }
@@ -92,14 +158,16 @@ function Robot({ look }: { look: React.RefObject<THREE.Vector2> }) {
   const armR = useRef<THREE.Group>(null);
   const torso = useRef<THREE.Group>(null);
   useFrame(({ clock }, raw) => {
-    const dt = Math.min(raw, 0.05), t = clock.elapsedTime, k = 1 - Math.exp(-6 * dt);
+    const dt = Math.min(raw, 0.05),
+      t = clock.elapsedTime,
+      k = 1 - Math.exp(-6 * dt);
     const lp = look.current ?? new THREE.Vector2();
     if (head.current) {
       head.current.rotation.y += (lp.x * 0.7 - head.current.rotation.y) * k;
       head.current.rotation.x += (-lp.y * 0.35 - head.current.rotation.x) * k;
       head.current.rotation.z = Math.sin(t * 2.2) * 0.04; // vibing to the music
     }
-    if (eyes.current) eyes.current.scale.y = (t % 3.6) < 0.12 ? 0.1 : 1;
+    if (eyes.current) eyes.current.scale.y = t % 3.6 < 0.12 ? 0.1 : 1;
     if (torso.current) torso.current.position.y = Math.sin(t * 2.2) * 0.015;
     // typing hands
     if (armL.current) armL.current.rotation.x = -0.9 + Math.sin(t * 14) * 0.06;
@@ -150,12 +218,22 @@ function Robot({ look }: { look: React.RefObject<THREE.Vector2> }) {
             <group key={sd}>
               <Block p={[sd * 0.42, 0.2, 0]} s={[0.08, 0.26, 0.1]} color={C.dark} />
               <Block p={[sd * 0.43, -0.02, 0]} s={[0.14, 0.32, 0.3]} color={C.chair} r={0.06} />
-              <Block p={[sd * 0.51, -0.02, 0]} s={[0.03, 0.18, 0.18]} color={C.accent} emissive={0.5} />
+              <Block
+                p={[sd * 0.51, -0.02, 0]}
+                s={[0.03, 0.18, 0.18]}
+                color={C.accent}
+                emissive={0.5}
+              />
             </group>
           ))}
           {/* mic boom */}
           <Block p={[-0.46, -0.14, 0.2]} s={[0.04, 0.04, 0.34]} color={C.dark} rot={[0, 0.35, 0]} />
-          <Block p={[-0.32, -0.2, 0.39]} s={[0.24, 0.04, 0.04]} color={C.dark} rot={[0, 0.5, -0.3]} />
+          <Block
+            p={[-0.32, -0.2, 0.39]}
+            s={[0.24, 0.04, 0.04]}
+            color={C.dark}
+            rot={[0, 0.5, -0.3]}
+          />
           <Block p={[-0.17, -0.25, 0.44]} s={[0.1, 0.1, 0.1]} color={C.accent} r={0.05} />
         </group>
       </group>
@@ -171,11 +249,14 @@ function Rig({ visible, children }: { visible: boolean; children: ReactNode }) {
   const s = useRef({ x: -7, vx: 0, rot: -1.6, vr: 0, spin: 0, spinV: 0, drag: false, lastX: 0 });
   const kick = useContext(KickCtx);
   useFrame((_, raw) => {
-    const dt = Math.min(raw, 0.05), st = s.current;
+    const dt = Math.min(raw, 0.05),
+      st = s.current;
     const target = visible ? 0 : -7;
     const a = -ENTRY_K * (st.x - target) - ENTRY_C * st.vx;
-    st.vx += a * dt; st.x += st.vx * dt;
-    st.vr += (-ENTRY_K * 0.6 * (st.rot - 0.45) - ENTRY_C * st.vr) * dt; st.rot += st.vr * dt;
+    st.vx += a * dt;
+    st.x += st.vx * dt;
+    st.vr += (-ENTRY_K * 0.6 * (st.rot - 0.45) - ENTRY_C * st.vr) * dt;
+    st.rot += st.vr * dt;
     if (!st.drag) {
       st.spinV += -SPIN_HOME_K * st.spin * dt;
       st.spinV *= Math.exp(-SPIN_DRAG * dt);
@@ -193,19 +274,33 @@ function Rig({ visible, children }: { visible: boolean; children: ReactNode }) {
       ref={g}
       onPointerDown={(e) => {
         e.stopPropagation();
-        const st = s.current; st.drag = true; st.lastX = e.clientX; st.spinV = 0;
+        const st = s.current;
+        st.drag = true;
+        st.lastX = e.clientX;
+        st.spinV = 0;
         (e.target as Element | null)?.setPointerCapture?.(e.pointerId);
         document.body.style.cursor = "grabbing";
         kick.current = { t: performance.now(), origin: e.point.clone(), power: 0.9 };
       }}
       onPointerMove={(e) => {
-        const st = s.current; if (!st.drag) return;
-        const dx = (e.clientX - st.lastX) * 0.012; st.lastX = e.clientX;
-        st.spin += dx; st.spinV = dx / 0.016;
+        const st = s.current;
+        if (!st.drag) return;
+        const dx = (e.clientX - st.lastX) * 0.012;
+        st.lastX = e.clientX;
+        st.spin += dx;
+        st.spinV = dx / 0.016;
       }}
-      onPointerUp={() => { s.current.drag = false; document.body.style.cursor = "grab"; }}
-      onPointerLeave={() => { s.current.drag = false; }}
-      onDoubleClick={(e) => { e.stopPropagation(); kick.current = { t: performance.now() + 1, origin: e.point.clone(), power: 3.5 }; }}
+      onPointerUp={() => {
+        s.current.drag = false;
+        document.body.style.cursor = "grab";
+      }}
+      onPointerLeave={() => {
+        s.current.drag = false;
+      }}
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        kick.current = { t: performance.now() + 1, origin: e.point.clone(), power: 3.5 };
+      }}
     >
       {children}
     </group>
@@ -225,23 +320,59 @@ export default function RobotScene({ visible }: { visible: boolean }) {
         onCreated={({ camera }) => camera.lookAt(0, 1.4, 0)}
         onPointerMove={(e) => {
           const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-          look.current.set(((e.clientX - r.left) / r.width) * 2 - 1, -(((e.clientY - r.top) / r.height) * 2 - 1));
+          look.current.set(
+            ((e.clientX - r.left) / r.width) * 2 - 1,
+            -(((e.clientY - r.top) / r.height) * 2 - 1),
+          );
         }}
         style={{ touchAction: "pan-y" }}
       >
         <ambientLight intensity={0.5} />
-        <directionalLight position={[4, 7, 5]} intensity={2.2} castShadow shadow-mapSize={[1024, 1024]} shadow-camera-left={-4} shadow-camera-right={4} shadow-camera-top={4} shadow-camera-bottom={-4} />
+        <directionalLight
+          position={[4, 7, 5]}
+          intensity={2.2}
+          castShadow
+          shadow-mapSize={[1024, 1024]}
+          shadow-camera-left={-4}
+          shadow-camera-right={4}
+          shadow-camera-top={4}
+          shadow-camera-bottom={-4}
+        />
         <pointLight position={[-2, 2, 2]} intensity={6} color={C.accent} distance={6} />
         <Environment resolution={128}>
-          <Lightformer intensity={2} position={[0, 5, 0]} scale={[10, 10, 1]} rotation-x={Math.PI / 2} />
-          <Lightformer intensity={1.2} color="#ffd9b0" position={[-5, 1, 2]} rotation-y={Math.PI / 2} scale={[20, 2, 1]} />
-          <Lightformer intensity={0.8} color="#ffffff" position={[5, 2, -2]} rotation-y={-Math.PI / 2} scale={[20, 2, 1]} />
+          <Lightformer
+            intensity={2}
+            position={[0, 5, 0]}
+            scale={[10, 10, 1]}
+            rotation-x={Math.PI / 2}
+          />
+          <Lightformer
+            intensity={1.2}
+            color="#ffd9b0"
+            position={[-5, 1, 2]}
+            rotation-y={Math.PI / 2}
+            scale={[20, 2, 1]}
+          />
+          <Lightformer
+            intensity={0.8}
+            color="#ffffff"
+            position={[5, 2, -2]}
+            rotation-y={-Math.PI / 2}
+            scale={[20, 2, 1]}
+          />
         </Environment>
         <Rig visible={visible}>
           <Chair />
           <Robot look={look} />
         </Rig>
-        <ContactShadows position={[0, 0, 0]} opacity={0.45} scale={8} blur={2.4} far={3} color={C.dark} />
+        <ContactShadows
+          position={[0, 0, 0]}
+          opacity={0.45}
+          scale={8}
+          blur={2.4}
+          far={3}
+          color={C.dark}
+        />
       </Canvas>
     </KickCtx.Provider>
   );

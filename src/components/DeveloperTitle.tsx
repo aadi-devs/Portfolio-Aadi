@@ -40,7 +40,8 @@ function PhysicsString() {
     const loop = () => {
       width = element.clientWidth;
       center = element.clientHeight / 2;
-      const top = 3, bottom = element.clientHeight - 3;
+      const top = 3,
+        bottom = element.clientHeight - 3;
       for (let i = 1; i < COUNT; i++) {
         const imp = Math.max(-10, Math.min(10, impulse[i]!));
         impulse[i] = 0;
@@ -48,8 +49,13 @@ function PhysicsString() {
         prev[i] = y[i]!;
         y[i] = y[i]! + v + (center - y[i]!) * 0.004;
         // Keep the string inside its box: squash instead of clipping out of view
-        if (y[i]! < top) { y[i] = top; prev[i] = Math.max(prev[i]!, top); }
-        else if (y[i]! > bottom) { y[i] = bottom; prev[i] = Math.min(prev[i]!, bottom); }
+        if (y[i]! < top) {
+          y[i] = top;
+          prev[i] = Math.max(prev[i]!, top);
+        } else if (y[i]! > bottom) {
+          y[i] = bottom;
+          prev[i] = Math.min(prev[i]!, bottom);
+        }
       }
       for (let it = 0; it < 6; it++) {
         for (let i = 1; i < COUNT; i++) {
@@ -79,8 +85,21 @@ function PhysicsString() {
   }, []);
 
   return (
-    <svg ref={svg} className="h-[clamp(3rem,14vh,7rem)] min-w-0 flex-1 overflow-hidden text-foreground/50" aria-hidden="true" data-physics-string="">
-      <path ref={path} d="" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <svg
+      ref={svg}
+      className="h-[clamp(3rem,14vh,7rem)] min-w-0 flex-1 overflow-hidden text-foreground/50"
+      aria-hidden="true"
+      data-physics-string=""
+    >
+      <path
+        ref={path}
+        d=""
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -101,7 +120,11 @@ export function DeveloperTitle() {
           setPos(((e.clientX - r.left) / r.width) * WORD.length - 0.5);
         }}
       >
-        <span className="rise inline-flex py-[clamp(0.5rem,2vh,1.25rem)]" style={{ animationDelay: "0.9s" }} aria-hidden="true">
+        <span
+          className="rise inline-flex py-[clamp(0.5rem,2vh,1.25rem)]"
+          style={{ animationDelay: "0.9s" }}
+          aria-hidden="true"
+        >
           {WORD.map((letter, i) => {
             const d = pos === null ? 99 : i - pos;
             const strength = Math.exp(-(d * d) / 1.2);
@@ -109,7 +132,13 @@ export function DeveloperTitle() {
             const tilt = Math.max(-1, Math.min(1, d)) * 10 * strength;
             return (
               <span key={i} className="developer-letter">
-                <span style={{ transform: `translateY(${lift.toFixed(3)}em) rotate(${tilt.toFixed(2)}deg)` }}>{letter}</span>
+                <span
+                  style={{
+                    transform: `translateY(${lift.toFixed(3)}em) rotate(${tilt.toFixed(2)}deg)`,
+                  }}
+                >
+                  {letter}
+                </span>
               </span>
             );
           })}

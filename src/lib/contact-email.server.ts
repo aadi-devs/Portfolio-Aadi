@@ -1,7 +1,10 @@
 import type { ContactInput } from "./contact.functions";
 
 const esc = (s: string) =>
-  s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+  s.replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+  );
 
 function row(label: string, value?: string | null) {
   if (!value) return "";
@@ -26,14 +29,14 @@ ${row("Category", d.category)}${row("Budget", d.budget)}${row("Timeline", d.time
 }
 
 export async function sendContactEmail(d: ContactInput) {
-  const key = process.env['RESEND_API_KEY'];
+  const key = process.env["RESEND_API_KEY"];
   if (!key) throw new Error("RESEND_API_KEY is not set");
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      from: process.env['RESEND_FROM'] || "Portfolio <onboarding@resend.dev>",
-      to: [process.env['CONTACT_TO_EMAIL'] || "aadi@victus.wtf"],
+      from: process.env["RESEND_FROM"] || "Portfolio <onboarding@resend.dev>",
+      to: [process.env["CONTACT_TO_EMAIL"] || "aadi@victus.wtf"],
       reply_to: d.email,
       subject: `New inquiry: ${d.category} — ${d.name}`,
       html: contactEmailHtml(d),
